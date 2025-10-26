@@ -1,0 +1,5 @@
+android/** linguist-vendored
+ios/** linguist-vendored
+*.arb linguist-detectable=false
+*.lock linguist-detectable=false
+*.yaml linguist-detectable=false
