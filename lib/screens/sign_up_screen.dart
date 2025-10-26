@@ -1,48 +1,57 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:quizwiz/screens/login_screen.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_colors.dart';
-import '../utils/constants.dart';
-import 'sign_up_screen.dart';
+import 'home_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+/// Sign Up Ekranı
+/// Email, şifre ve isim ile kayıt olma
+class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  final _displayNameController = TextEditingController();
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    _displayNameController.dispose();
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
+  Future<void> _handleSignUp() async {
     if (_formKey.currentState!.validate()) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-      final success = await authProvider.signIn(
+      final success = await authProvider.signUp(
         email: _emailController.text.trim(),
         password: _passwordController.text,
+        displayName: _displayNameController.text.trim(),
       );
 
       if (!mounted) return;
 
       if (success) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(authProvider.errorMessage ?? 'Giriş başarısız'),
+            content: Text(authProvider.errorMessage ?? 'Kayıt başarısız'),
             backgroundColor: Colors.red,
           ),
         );
@@ -53,6 +62,14 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.white),
+          onPressed: () => Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+          ),
+        ),
+      ),
       body: Container(
         decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
         child: SafeArea(
@@ -62,49 +79,12 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Form(
                 key: _formKey,
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 60),
-
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.lightPurple.withValues(alpha: 0.3),
-                            blurRadius: 20,
-                            spreadRadius: 5,
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Q',
-                          style: TextStyle(
-                            fontSize: 48,
-                            fontWeight: FontWeight.bold,
-                            foreground: Paint()
-                              ..shader =
-                                  const LinearGradient(
-                                    colors: [
-                                      AppColors.lightBlue,
-                                      AppColors.lightPink,
-                                    ],
-                                  ).createShader(
-                                    const Rect.fromLTWH(0, 0, 200, 70),
-                                  ),
-                          ),
-                        ),
-                      ),
-                    ),
-
                     const SizedBox(height: 20),
 
                     Text(
-                      AppConstants.appName,
+                      'Create\nAccount',
                       style: Theme.of(context).textTheme.displayLarge?.copyWith(
                         color: AppColors.white,
                         fontWeight: FontWeight.bold,
@@ -114,13 +94,33 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 10),
 
                     Text(
-                      'Log in to Your Account',
+                      'Sign up to get started',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: AppColors.white.withValues(alpha: 0.8),
                       ),
                     ),
 
-                    const SizedBox(height: 50),
+                    const SizedBox(height: 40),
+
+                    TextFormField(
+                      controller: _displayNameController,
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                        labelText: 'Full Name',
+                        prefixIcon: Icon(Icons.person_outline),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Name is required';
+                        }
+                        if (value.length < 3) {
+                          return 'Name must be at least 3 characters';
+                        }
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 20),
 
                     TextFormField(
                       controller: _emailController,
@@ -146,8 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextFormField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
-                      textInputAction: TextInputAction.done,
-                      onFieldSubmitted: (_) => _handleLogin(),
+                      textInputAction: TextInputAction.next,
                       decoration: InputDecoration(
                         labelText: 'Password',
                         prefixIcon: const Icon(Icons.lock_outline),
@@ -175,22 +174,39 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                     ),
 
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 20),
 
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {
-                          _showForgotPasswordDialog();
-                        },
-                        child: Text(
-                          'Forgot Password?',
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: AppColors.white.withValues(alpha: 0.8),
-                              ),
+                    TextFormField(
+                      controller: _confirmPasswordController,
+                      obscureText: _obscureConfirmPassword,
+                      textInputAction: TextInputAction.done,
+                      onFieldSubmitted: (_) => _handleSignUp(),
+                      decoration: InputDecoration(
+                        labelText: 'Confirm Password',
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureConfirmPassword
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscureConfirmPassword =
+                                  !_obscureConfirmPassword;
+                            });
+                          },
                         ),
                       ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please confirm your password';
+                        }
+                        if (value != _passwordController.text) {
+                          return 'Passwords do not match';
+                        }
+                        return null;
+                      },
                     ),
 
                     const SizedBox(height: 40),
@@ -205,7 +221,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: ElevatedButton(
                             onPressed: authProvider.isLoading
                                 ? null
-                                : _handleLogin,
+                                : _handleSignUp,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.transparent,
                               shadowColor: Colors.transparent,
@@ -226,7 +242,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                   )
                                 : const Text(
-                                    'Log In',
+                                    'Sign Up',
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -238,13 +254,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                     ),
 
-                    const SizedBox(height: 60),
+                    const SizedBox(height: 30),
 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          "Don't have an account? ",
+                          'Already have an account? ',
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(
                                 color: AppColors.white.withValues(alpha: 0.7),
@@ -254,12 +270,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           onPressed: () {
                             Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
-                                builder: (_) => const SignUpScreen(),
+                                builder: (_) => const LoginScreen(),
                               ),
                             );
                           },
                           child: const Text(
-                            'Sign Up',
+                            'Log In',
                             style: TextStyle(
                               color: AppColors.lightBlue,
                               fontWeight: FontWeight.bold,
@@ -274,66 +290,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  void _showForgotPasswordDialog() {
-    final emailController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkBlue2,
-        title: const Text(
-          'Forgot Password?',
-          style: TextStyle(color: AppColors.white),
-        ),
-        content: TextField(
-          controller: emailController,
-          keyboardType: TextInputType.emailAddress,
-          decoration: const InputDecoration(
-            labelText: 'Email',
-            labelStyle: TextStyle(color: AppColors.white),
-          ),
-          style: const TextStyle(color: AppColors.white),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: AppColors.white),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              final authProvider = Provider.of<AuthProvider>(
-                context,
-                listen: false,
-              );
-              final email = emailController.text.trim();
-
-              if (email.isNotEmpty) {
-                await authProvider.resetPassword(email);
-
-                if (!mounted) return;
-                Navigator.pop(context);
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Password reset email sent!'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              }
-            },
-            child: const Text(
-              'Send',
-              style: TextStyle(color: AppColors.lightBlue),
-            ),
-          ),
-        ],
       ),
     );
   }
