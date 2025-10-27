@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../data/sample_quizzes.dart';
+import 'quiz_question_screen.dart';
 
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
@@ -196,13 +198,22 @@ class _CategoriesScreenState extends State<CategoriesScreen>
               color: Colors.transparent,
               child: InkWell(
                 onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('$label quiz coming soon!'),
-                      backgroundColor: AppColors.lightBlue,
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
+                  final quiz = SampleQuizzes.getQuiz(label);
+                  if (quiz != null) {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => QuizQuestionScreen(quiz: quiz),
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('$label quiz coming soon!'),
+                        backgroundColor: AppColors.lightBlue,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
                 },
                 borderRadius: BorderRadius.circular(16),
                 child: Column(
