@@ -35,6 +35,34 @@ class HomeScreen extends StatelessWidget {
                         ),
                         Consumer<AuthProvider>(
                           builder: (context, authProvider, child) {
+                            if (authProvider.isLoadingUserData) {
+                              return const SizedBox(
+                                height: 24,
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              AppColors.white,
+                                            ),
+                                      ),
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Loading...',
+                                      style: TextStyle(
+                                        color: AppColors.white,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
                             return Text(
                               authProvider.user?.displayName ?? 'Player',
                               style: const TextStyle(

@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:quizwiz/screens/login_screen.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_colors.dart';
-import 'home_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -43,13 +42,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (!mounted) return;
 
       if (success) {
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Account created successfully! Please login.'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+
+        // Navigate to login screen
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(authProvider.errorMessage ?? 'Kayıt başarısız'),
+            content: Text(authProvider.errorMessage ?? 'Sign up failed'),
             backgroundColor: Colors.red,
           ),
         );

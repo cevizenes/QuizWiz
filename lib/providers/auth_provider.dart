@@ -9,10 +9,12 @@ class AuthProvider with ChangeNotifier {
 
   UserModel? _user;
   bool _isLoading = false;
+  bool _isLoadingUserData = false;
   String? _errorMessage;
 
   UserModel? get user => _user;
   bool get isLoading => _isLoading;
+  bool get isLoadingUserData => _isLoadingUserData;
   String? get errorMessage => _errorMessage;
   bool get isAuthenticated => _auth.currentUser != null;
 
@@ -29,6 +31,9 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> _loadUserData(String userId) async {
     try {
+      _isLoadingUserData = true;
+      notifyListeners();
+
       final doc = await _firestore.collection('users').doc(userId).get();
 
       if (doc.exists) {
@@ -48,9 +53,11 @@ class AuthProvider with ChangeNotifier {
             .set(_user!.toFirestore());
       }
 
+      _isLoadingUserData = false;
       notifyListeners();
     } catch (e) {
       _errorMessage = 'Failed to load user data: $e';
+      _isLoadingUserData = false;
       notifyListeners();
     }
   }
@@ -83,6 +90,9 @@ class AuthProvider with ChangeNotifier {
           .collection('users')
           .doc(result.user!.uid)
           .set(user.toFirestore());
+
+      // Sign out the user so they can log in again
+      await _auth.signOut();
 
       _isLoading = false;
       notifyListeners();
