@@ -6,7 +6,7 @@ import '../providers/auth_provider.dart';
 import '../theme/app_colors.dart';
 import '../utils/constants.dart';
 import 'sign_up_screen.dart';
-import 'home_screen.dart';
+import 'main_navigation.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -42,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (success) {
         if (mounted) {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
+            MaterialPageRoute(builder: (_) => const MainNavigation()),
           );
         }
       } else {

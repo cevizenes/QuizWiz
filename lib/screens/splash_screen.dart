@@ -4,7 +4,7 @@ import '../providers/auth_provider.dart';
 import '../theme/app_colors.dart';
 import '../utils/constants.dart';
 import 'login_screen.dart';
-import 'home_screen.dart';
+import 'main_navigation.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -53,7 +53,7 @@ class _SplashScreenState extends State<SplashScreen>
     if (authProvider.isAuthenticated) {
       Navigator.of(
         context,
-      ).pushReplacement(MaterialPageRoute(builder: (_) => const HomeScreen()));
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const MainNavigation()));
     } else {
       Navigator.of(
         context,
