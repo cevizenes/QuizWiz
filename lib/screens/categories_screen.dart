@@ -1,8 +1,61 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 
-class CategoriesScreen extends StatelessWidget {
+class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
+
+  @override
+  State<CategoriesScreen> createState() => _CategoriesScreenState();
+}
+
+class _CategoriesScreenState extends State<CategoriesScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late List<Animation<double>> _itemAnimations;
+
+  final List<Map<String, dynamic>> _categories = [
+    {'icon': Icons.science, 'label': 'Science'},
+    {'icon': Icons.history_edu, 'label': 'History'},
+    {'icon': Icons.movie, 'label': 'Movies & TV'},
+    {'icon': Icons.public, 'label': 'Geography'},
+    {'icon': Icons.sports_soccer, 'label': 'Sports'},
+    {'icon': Icons.music_note, 'label': 'Music'},
+    {'icon': Icons.book, 'label': 'Literature'},
+    {'icon': Icons.computer, 'label': 'Technology'},
+    {'icon': Icons.palette, 'label': 'Art'},
+    {'icon': Icons.restaurant, 'label': 'Food'},
+    {'icon': Icons.nature, 'label': 'Nature'},
+    {'icon': Icons.language, 'label': 'Languages'},
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+
+    // Create staggered animations for each category card
+    _itemAnimations = List.generate(_categories.length, (index) {
+      final start = (index * 0.04).clamp(0.0, 1.0);
+      final end = ((index * 0.04) + 0.6).clamp(0.0, 1.0);
+      return Tween<double>(begin: 0.0, end: 1.0).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Interval(start, end, curve: Curves.easeOutCubic),
+        ),
+      );
+    });
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,77 +122,37 @@ class CategoriesScreen extends StatelessWidget {
                 ),
               ),
 
-              // Categories Grid
+              // Categories Grid with staggered animation
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: GridView.count(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 1.3,
-                    children: [
-                      _buildCategoryCard(
-                        icon: Icons.science,
-                        label: 'Science',
-                        context: context,
-                      ),
-                      _buildCategoryCard(
-                        icon: Icons.history_edu,
-                        label: 'History',
-                        context: context,
-                      ),
-                      _buildCategoryCard(
-                        icon: Icons.movie,
-                        label: 'Movies & TV',
-                        context: context,
-                      ),
-                      _buildCategoryCard(
-                        icon: Icons.public,
-                        label: 'World History',
-                        context: context,
-                      ),
-                      _buildCategoryCard(
-                        icon: Icons.language,
-                        label: 'Geography',
-                        context: context,
-                      ),
-                      _buildCategoryCard(
-                        icon: Icons.sports_soccer,
-                        label: 'Sports',
-                        context: context,
-                      ),
-                      _buildCategoryCard(
-                        icon: Icons.headphones,
-                        label: 'Sports',
-                        context: context,
-                      ),
-                      _buildCategoryCard(
-                        icon: Icons.music_note,
-                        label: 'Music',
-                        context: context,
-                      ),
-                      _buildCategoryCard(
-                        icon: Icons.menu_book,
-                        label: 'Ppusic',
-                        context: context,
-                      ),
-                      _buildCategoryCard(
-                        icon: Icons.book,
-                        label: 'Literature',
-                        context: context,
-                      ),
-                      _buildCategoryCard(
-                        icon: Icons.audiotrack,
-                        label: 'Literature',
-                        context: context,
-                      ),
-                      _buildCategoryCard(
-                        icon: Icons.computer,
-                        label: 'Technology',
-                        context: context,
-                      ),
-                    ],
+                  child: GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 1.3,
+                        ),
+                    itemCount: _categories.length,
+                    itemBuilder: (context, index) {
+                      return AnimatedBuilder(
+                        animation: _itemAnimations[index],
+                        builder: (context, child) {
+                          return Opacity(
+                            opacity: _itemAnimations[index].value,
+                            child: Transform.scale(
+                              scale: _itemAnimations[index].value,
+                              child: _buildCategoryCard(
+                                icon: _categories[index]['icon'] as IconData,
+                                label: _categories[index]['label'] as String,
+                                context: context,
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
                   ),
                 ),
               ),
@@ -157,41 +170,78 @@ class CategoriesScreen extends StatelessWidget {
     required String label,
     required BuildContext context,
   }) {
-    return GestureDetector(
-      onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('$label quiz coming soon!'),
-            backgroundColor: AppColors.lightBlue,
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 200),
+      tween: Tween(begin: 1.0, end: 1.0),
+      builder: (context, scale, child) {
+        return Transform.scale(
+          scale: scale,
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.cardBackground,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: AppColors.lightPurple.withValues(alpha: 0.3),
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.lightBlue.withValues(alpha: 0.1),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('$label quiz coming soon!'),
+                      backgroundColor: AppColors.lightBlue,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TweenAnimationBuilder<double>(
+                      duration: const Duration(milliseconds: 300),
+                      tween: Tween(begin: 0.8, end: 1.0),
+                      curve: Curves.elasticOut,
+                      builder: (context, value, child) {
+                        return Transform.scale(
+                          scale: value,
+                          child: Icon(
+                            icon,
+                            color: AppColors.lightBlue,
+                            size: 48,
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        color: AppColors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         );
       },
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.cardBackground,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: AppColors.lightPurple.withValues(alpha: 0.3),
-            width: 2,
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: AppColors.white, size: 48),
-            const SizedBox(height: 12),
-            Text(
-              label,
-              style: const TextStyle(
-                color: AppColors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

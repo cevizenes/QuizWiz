@@ -4,8 +4,45 @@ import '../providers/auth_provider.dart';
 import '../theme/app_colors.dart';
 import '../utils/constants.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.2),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,189 +83,235 @@ class HomeScreen extends StatelessWidget {
               }
 
               // Show main content once user data is loaded
-              return SingleChildScrollView(
-                child: Column(
-                  children: [
-                    // Header with Logo
-                    Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 100,
-                            height: 100,
-                            decoration: BoxDecoration(
-                              color: AppColors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.lightPurple.withValues(
-                                    alpha: 0.3,
-                                  ),
-                                  blurRadius: 30,
-                                  spreadRadius: 10,
-                                ),
-                              ],
-                            ),
-                            child: Center(
-                              child: Text(
-                                'Q',
-                                style: TextStyle(
-                                  fontSize: 56,
-                                  fontWeight: FontWeight.bold,
-                                  foreground: Paint()
-                                    ..shader =
-                                        const LinearGradient(
-                                          colors: [
-                                            AppColors.lightBlue,
-                                            AppColors.lightPink,
-                                          ],
-                                        ).createShader(
-                                          const Rect.fromLTWH(0, 0, 200, 70),
+              return FadeTransition(
+                opacity: _fadeAnimation,
+                child: SlideTransition(
+                  position: _slideAnimation,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        // Header with Logo
+                        Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              TweenAnimationBuilder<double>(
+                                duration: const Duration(milliseconds: 1000),
+                                tween: Tween(begin: 0.8, end: 1.0),
+                                curve: Curves.elasticOut,
+                                builder: (context, value, child) {
+                                  return Transform.scale(
+                                    scale: value,
+                                    child: Container(
+                                      width: 100,
+                                      height: 100,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.white,
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: AppColors.lightPurple
+                                                .withValues(alpha: 0.3),
+                                            blurRadius: 30,
+                                            spreadRadius: 10,
+                                          ),
+                                        ],
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          'Q',
+                                          style: TextStyle(
+                                            fontSize: 56,
+                                            fontWeight: FontWeight.bold,
+                                            foreground: Paint()
+                                              ..shader =
+                                                  const LinearGradient(
+                                                    colors: [
+                                                      AppColors.lightBlue,
+                                                      AppColors.lightPink,
+                                                    ],
+                                                  ).createShader(
+                                                    const Rect.fromLTWH(
+                                                      0,
+                                                      0,
+                                                      200,
+                                                      70,
+                                                    ),
+                                                  ),
+                                          ),
                                         ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                AppConstants.appName,
+                                style: const TextStyle(
+                                  color: AppColors.white,
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            AppConstants.appName,
-                            style: const TextStyle(
-                              color: AppColors.white,
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Welcome, ${authProvider.user?.displayName ?? 'Player'}!',
-                            style: TextStyle(
-                              color: AppColors.white.withValues(alpha: 0.9),
-                              fontSize: 18,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Play Now Button
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: AppColors.buttonGradient,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Quiz feature coming soon!'),
-                                backgroundColor: Colors.blue,
+                              const SizedBox(height: 8),
+                              Text(
+                                'Welcome, ${authProvider.user?.displayName ?? 'Player'}!',
+                                style: TextStyle(
+                                  color: AppColors.white.withValues(alpha: 0.9),
+                                  fontSize: 18,
+                                ),
                               ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            minimumSize: const Size(double.infinity, 60),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                            ],
+                          ),
+                        ),
+
+                        // Play Now Button
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                          child: TweenAnimationBuilder<double>(
+                            duration: const Duration(milliseconds: 1200),
+                            tween: Tween(begin: 0.9, end: 1.0),
+                            curve: Curves.easeOut,
+                            builder: (context, value, child) {
+                              return Transform.scale(
+                                scale: value,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: AppColors.buttonGradient,
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.lightBlue.withValues(
+                                          alpha: 0.3,
+                                        ),
+                                        blurRadius: 20,
+                                        spreadRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                  child: ElevatedButton.icon(
+                                    onPressed: () {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Quiz feature coming soon!',
+                                          ),
+                                          backgroundColor: Colors.blue,
+                                        ),
+                                      );
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.transparent,
+                                      shadowColor: Colors.transparent,
+                                      minimumSize: const Size(
+                                        double.infinity,
+                                        60,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                    ),
+                                    icon: const Icon(
+                                      Icons.play_arrow,
+                                      color: AppColors.white,
+                                      size: 28,
+                                    ),
+                                    label: const Text(
+                                      'Play Now',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+
+                        const SizedBox(height: 32),
+
+                        // Featured Quizzes Section
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20.0),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Featured Quizzes',
+                              style: TextStyle(
+                                color: AppColors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                          icon: const Icon(
-                            Icons.play_arrow,
-                            color: AppColors.white,
-                            size: 28,
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        SizedBox(
+                          height: 140,
+                          child: ListView(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            children: [
+                              _buildFeaturedQuizCard(
+                                icon: Icons.language,
+                                title: 'Space Exploration',
+                                context: context,
+                              ),
+                              _buildFeaturedQuizCard(
+                                icon: Icons.public,
+                                title: 'World History',
+                                context: context,
+                              ),
+                              _buildFeaturedQuizCard(
+                                icon: Icons.emoji_events,
+                                title: 'World History',
+                                context: context,
+                              ),
+                            ],
                           ),
-                          label: const Text(
-                            'Play Now',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.white,
+                        ),
+
+                        const SizedBox(height: 32),
+
+                        // Recent Activity Section
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20.0),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Recent Activity',
+                              style: TextStyle(
+                                color: AppColors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
 
-                    const SizedBox(height: 32),
+                        const SizedBox(height: 16),
 
-                    // Featured Quizzes Section
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.0),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Featured Quizzes',
-                          style: TextStyle(
-                            color: AppColors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: _buildRecentActivityItem(
+                            name: 'John Doe',
+                            activity: 'completed "Pop Culture Quiz Quiz',
+                            context: context,
                           ),
                         ),
-                      ),
+
+                        const SizedBox(height: 100),
+                      ],
                     ),
-
-                    const SizedBox(height: 16),
-
-                    SizedBox(
-                      height: 140,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        children: [
-                          _buildFeaturedQuizCard(
-                            icon: Icons.language,
-                            title: 'Space Exploration',
-                            context: context,
-                          ),
-                          _buildFeaturedQuizCard(
-                            icon: Icons.public,
-                            title: 'World History',
-                            context: context,
-                          ),
-                          _buildFeaturedQuizCard(
-                            icon: Icons.emoji_events,
-                            title: 'World History',
-                            context: context,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    // Recent Activity Section
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.0),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Recent Activity',
-                          style: TextStyle(
-                            color: AppColors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: _buildRecentActivityItem(
-                        name: 'John Doe',
-                        activity: 'completed "Pop Culture Quiz Quiz',
-                        context: context,
-                      ),
-                    ),
-
-                    const SizedBox(height: 100),
-                  ],
+                  ),
                 ),
               );
             },
