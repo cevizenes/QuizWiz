@@ -14,152 +14,156 @@ class HomeScreen extends StatelessWidget {
       body: Container(
         decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
         child: SafeArea(
-          child: Column(
-            children: [
-              // Header
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Welcome',
-                          style: TextStyle(
-                            color: AppColors.white,
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
+          child: Consumer<AuthProvider>(
+            builder: (context, authProvider, child) {
+              // Show loading indicator in center while user data is loading
+              if (authProvider.isLoadingUserData) {
+                return const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 60,
+                        height: 60,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 4,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.white,
                           ),
                         ),
-                        Consumer<AuthProvider>(
-                          builder: (context, authProvider, child) {
-                            if (authProvider.isLoadingUserData) {
-                              return const SizedBox(
-                                height: 24,
-                                child: Row(
-                                  children: [
-                                    SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                              AppColors.white,
-                                            ),
-                                      ),
-                                    ),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'Loading...',
-                                      style: TextStyle(
-                                        color: AppColors.white,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }
-                            return Text(
+                      ),
+                      SizedBox(height: 20),
+                      Text(
+                        'Loading...',
+                        style: TextStyle(
+                          color: AppColors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              // Show main content once user data is loaded
+              return Column(
+                children: [
+                  // Header
+                  Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Welcome',
+                              style: TextStyle(
+                                color: AppColors.white,
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
                               authProvider.user?.displayName ?? 'Player',
                               style: const TextStyle(
                                 color: AppColors.white,
                                 fontSize: 24,
                               ),
-                            );
+                            ),
+                          ],
+                        ),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.logout,
+                            color: AppColors.white,
+                          ),
+                          onPressed: () async {
+                            await authProvider.signOut();
+
+                            if (context.mounted) {
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                  builder: (_) => const LoginScreen(),
+                                ),
+                              );
+                            }
                           },
                         ),
                       ],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.logout, color: AppColors.white),
-                      onPressed: () async {
-                        final authProvider = Provider.of<AuthProvider>(
-                          context,
-                          listen: false,
-                        );
-                        await authProvider.signOut();
+                  ),
 
-                        if (context.mounted) {
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(
-                              builder: (_) => const LoginScreen(),
+                  const Spacer(),
+
+                  // Center content
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.lightPurple.withValues(
+                                alpha: 0.3,
+                              ),
+                              blurRadius: 30,
+                              spreadRadius: 10,
                             ),
-                          );
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              ),
-
-              const Spacer(),
-
-              // Center content
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      color: AppColors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.lightPurple.withValues(alpha: 0.3),
-                          blurRadius: 30,
-                          spreadRadius: 10,
+                          ],
                         ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        'Q',
-                        style: TextStyle(
-                          fontSize: 64,
-                          fontWeight: FontWeight.bold,
-                          foreground: Paint()
-                            ..shader = const LinearGradient(
-                              colors: [
-                                AppColors.lightBlue,
-                                AppColors.lightPink,
-                              ],
-                            ).createShader(const Rect.fromLTWH(0, 0, 200, 70)),
+                        child: Center(
+                          child: Text(
+                            'Q',
+                            style: TextStyle(
+                              fontSize: 64,
+                              fontWeight: FontWeight.bold,
+                              foreground: Paint()
+                                ..shader =
+                                    const LinearGradient(
+                                      colors: [
+                                        AppColors.lightBlue,
+                                        AppColors.lightPink,
+                                      ],
+                                    ).createShader(
+                                      const Rect.fromLTWH(0, 0, 200, 70),
+                                    ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
 
-                  const SizedBox(height: 20),
+                      const SizedBox(height: 20),
 
-                  Text(
-                    AppConstants.appName,
-                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      color: AppColors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                      Text(
+                        AppConstants.appName,
+                        style: Theme.of(context).textTheme.displayLarge
+                            ?.copyWith(
+                              color: AppColors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
 
-                  const SizedBox(height: 10),
+                      const SizedBox(height: 10),
 
-                  Text(
-                    AppConstants.appTagline,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppColors.white.withValues(alpha: 0.7),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+                      Text(
+                        AppConstants.appTagline,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: AppColors.white.withValues(alpha: 0.7),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
 
-                  const SizedBox(height: 40),
+                      const SizedBox(height: 40),
 
-                  // Play Now Button
-                  Consumer<AuthProvider>(
-                    builder: (context, authProvider, child) {
-                      return Container(
+                      // Play Now Button
+                      Container(
                         decoration: BoxDecoration(
                           gradient: AppColors.buttonGradient,
                           borderRadius: BorderRadius.circular(12),
@@ -195,57 +199,52 @@ class HomeScreen extends StatelessWidget {
                             ),
                           ),
                         ),
-                      );
-                    },
+                      ),
+                    ],
                   ),
+
+                  const Spacer(),
+
+                  // User Info
+                  if (authProvider.user != null)
+                    Container(
+                      margin: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: AppColors.cardBackground,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            'User Stats',
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(color: AppColors.white),
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              _buildStatItem(
+                                'Quizzes',
+                                authProvider.user!.totalQuizzes.toString(),
+                              ),
+                              _buildStatItem(
+                                'Won',
+                                authProvider.user!.quizzesWon.toString(),
+                              ),
+                              _buildStatItem(
+                                'Score',
+                                authProvider.user!.totalScore.toString(),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                 ],
-              ),
-
-              const Spacer(),
-
-              // User Info
-              Consumer<AuthProvider>(
-                builder: (context, authProvider, child) {
-                  if (authProvider.user == null) return const SizedBox();
-
-                  return Container(
-                    margin: const EdgeInsets.all(20),
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: AppColors.cardBackground,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          'User Stats',
-                          style: Theme.of(context).textTheme.titleLarge
-                              ?.copyWith(color: AppColors.white),
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            _buildStatItem(
-                              'Quizzes',
-                              authProvider.user!.totalQuizzes.toString(),
-                            ),
-                            _buildStatItem(
-                              'Won',
-                              authProvider.user!.quizzesWon.toString(),
-                            ),
-                            _buildStatItem(
-                              'Score',
-                              authProvider.user!.totalScore.toString(),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ],
+              );
+            },
           ),
         ),
       ),
