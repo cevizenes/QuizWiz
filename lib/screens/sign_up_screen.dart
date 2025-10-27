@@ -5,8 +5,6 @@ import '../providers/auth_provider.dart';
 import '../theme/app_colors.dart';
 import 'home_screen.dart';
 
-/// Sign Up Ekranı
-/// Email, şifre ve isim ile kayıt olma
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
 
@@ -72,6 +70,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       ),
       body: Container(
         decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
+        height: double.infinity,
         child: SafeArea(
           child: SingleChildScrollView(
             child: Padding(
@@ -84,7 +83,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     const SizedBox(height: 20),
 
                     Text(
-                      'Create\nAccount',
+                      'Create Account',
                       style: Theme.of(context).textTheme.displayLarge?.copyWith(
                         color: AppColors.white,
                         fontWeight: FontWeight.bold,

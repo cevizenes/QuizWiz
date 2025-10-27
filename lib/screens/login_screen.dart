@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -59,6 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
+        height: double.infinity,
         child: SafeArea(
           child: SingleChildScrollView(
             child: Padding(
@@ -322,7 +325,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 await authProvider.resetPassword(email);
 
                 if (!mounted) return;
-                Navigator.pop(context);
+                Navigator.of(context).pop();
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(

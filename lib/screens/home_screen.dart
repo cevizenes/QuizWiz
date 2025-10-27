@@ -5,8 +5,6 @@ import '../theme/app_colors.dart';
 import '../utils/constants.dart';
 import 'login_screen.dart';
 
-/// Ana ekran
-/// Phase 3'te daha detaylı geliştirilecek
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -84,7 +82,7 @@ class HomeScreen extends StatelessWidget {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.lightPurple.withOpacity(0.3),
+                          color: AppColors.lightPurple.withValues(alpha: 0.3),
                           blurRadius: 30,
                           spreadRadius: 10,
                         ),
@@ -123,7 +121,7 @@ class HomeScreen extends StatelessWidget {
                   Text(
                     AppConstants.appTagline,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppColors.white.withOpacity(0.7),
+                      color: AppColors.white.withValues(alpha: 0.7),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -240,7 +238,7 @@ class HomeScreen extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: AppColors.white.withOpacity(0.7),
+            color: AppColors.white.withValues(alpha: 0.7),
             fontSize: 12,
           ),
         ),
