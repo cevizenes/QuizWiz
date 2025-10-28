@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/quiz_model.dart';
+import '../providers/auth_provider.dart';
+import '../services/firestore_service.dart';
 import '../theme/app_colors.dart';
 import 'main_navigation.dart';
 
@@ -8,6 +11,7 @@ class QuizResultScreen extends StatefulWidget {
   final int score;
   final int correctAnswers;
   final int totalQuestions;
+  final int timeTaken; // in seconds
 
   const QuizResultScreen({
     super.key,
@@ -15,6 +19,7 @@ class QuizResultScreen extends StatefulWidget {
     required this.score,
     required this.correctAnswers,
     required this.totalQuestions,
+    this.timeTaken = 0,
   });
 
   @override
@@ -26,6 +31,8 @@ class _QuizResultScreenState extends State<QuizResultScreen>
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
+  final FirestoreService _firestoreService = FirestoreService();
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -46,6 +53,58 @@ class _QuizResultScreenState extends State<QuizResultScreen>
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
 
     _controller.forward();
+
+    // Save quiz result to Firestore
+    _saveQuizResult();
+  }
+
+  Future<void> _saveQuizResult() async {
+    if (_isSaving) return;
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final userId = authProvider.user?.id;
+
+      if (userId != null) {
+        // Save quiz result
+        await _firestoreService.saveQuizResult(
+          userId: userId,
+          quizId: widget.quiz.id,
+          category: widget.quiz.category,
+          score: widget.score,
+          correctAnswers: widget.correctAnswers,
+          totalQuestions: widget.totalQuestions,
+          timeTaken: widget.timeTaken,
+        );
+
+        // Update user statistics
+        final percentage =
+            (widget.correctAnswers / widget.totalQuestions * 100);
+        final isWin = percentage >= 60; // Consider 60%+ as a win
+
+        await _firestoreService.updateUserStatistics(
+          userId: userId,
+          scoreToAdd: widget.score,
+          isWin: isWin,
+        );
+
+        // Reload user data to reflect new statistics
+        await authProvider.reloadUserData();
+      }
+    } catch (e) {
+      // Silently fail - don't interrupt user experience
+      debugPrint('Error saving quiz result: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
   }
 
   @override

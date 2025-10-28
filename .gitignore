@@ -46,4 +46,5 @@ app.*.map.json
 android/app/google-services.json
 firebase.json
 .env
-PHASE_PROGRESS.md
+PHASE_PROGRESS.md   
+FIREBASE_SETUP.md

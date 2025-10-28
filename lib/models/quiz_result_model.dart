@@ -1,33 +1,30 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// Quiz sonuç modeli - Kullanıcının quiz sonuçlarını saklar
 class QuizResultModel {
   final String id;
   final String userId;
   final String quizId;
+  final String category;
   final int correctAnswers;
   final int totalQuestions;
   final int score;
-  final int timeSpent; // saniye cinsinden
-  final List<int> userAnswers; // Kullanıcının verdiği cevapların indeksleri
+  final int timeTaken;
   final DateTime completedAt;
 
   QuizResultModel({
     required this.id,
     required this.userId,
     required this.quizId,
+    required this.category,
     required this.correctAnswers,
     required this.totalQuestions,
     required this.score,
-    this.timeSpent = 0,
-    required this.userAnswers,
+    this.timeTaken = 0,
     required this.completedAt,
   });
 
-  // Doğru cevap yüzdesi
   double get accuracy => (correctAnswers / totalQuestions) * 100;
 
-  // Sınıflandırma
   String get grade {
     if (accuracy >= 90) return 'Excellent';
     if (accuracy >= 70) return 'Great';
@@ -40,26 +37,30 @@ class QuizResultModel {
       id: id,
       userId: data['userId'] ?? '',
       quizId: data['quizId'] ?? '',
+      category: data['category'] ?? 'Unknown',
       correctAnswers: data['correctAnswers'] ?? 0,
       totalQuestions: data['totalQuestions'] ?? 0,
       score: data['score'] ?? 0,
-      timeSpent: data['timeSpent'] ?? 0,
-      userAnswers: List<int>.from(data['userAnswers'] ?? []),
+      timeTaken: data['timeTaken'] ?? 0,
       completedAt:
           (data['completedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
 
-  Map<String, dynamic> toFirestore() {
+  Map<String, dynamic> toMap() {
     return {
       'userId': userId,
       'quizId': quizId,
+      'category': category,
       'correctAnswers': correctAnswers,
       'totalQuestions': totalQuestions,
       'score': score,
-      'timeSpent': timeSpent,
-      'userAnswers': userAnswers,
+      'timeTaken': timeTaken,
       'completedAt': Timestamp.fromDate(completedAt),
     };
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return toMap();
   }
 }

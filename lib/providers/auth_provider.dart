@@ -62,6 +62,14 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  /// Public method to reload user data
+  Future<void> reloadUserData() async {
+    final currentUser = _auth.currentUser;
+    if (currentUser != null) {
+      await _loadUserData(currentUser.uid);
+    }
+  }
+
   Future<bool> signUp({
     required String email,
     required String password,

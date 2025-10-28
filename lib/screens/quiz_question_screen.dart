@@ -23,6 +23,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
   int _secondsRemaining = 30;
   bool _isAnswered = false;
   int? _selectedAnswerIndex;
+  int _totalTimeTaken = 0; // Track total time taken across all questions
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -90,6 +91,9 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
       _isAnswered = true;
       _selectedAnswerIndex = selectedIndex;
       _userAnswers[_currentQuestionIndex] = selectedIndex;
+
+      // Track time taken for this question
+      _totalTimeTaken += (30 - _secondsRemaining);
     });
 
     final currentQuestion = widget.quiz.questions[_currentQuestionIndex];
@@ -134,6 +138,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
           score: _score,
           correctAnswers: _correctAnswers,
           totalQuestions: widget.quiz.questions.length,
+          timeTaken: _totalTimeTaken,
         ),
       ),
     );

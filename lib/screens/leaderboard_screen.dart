@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../services/firestore_service.dart';
+import '../models/user_model.dart';
 import '../theme/app_colors.dart';
 
 class LeaderboardScreen extends StatefulWidget {
@@ -17,17 +19,23 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   late Animation<Offset> _slideAnimation;
   late List<Animation<double>> _itemAnimations;
 
-  final List<Map<String, dynamic>> _topPlayers = [
-    {'rank': 1, 'name': 'CosmicKing', 'score': 50000, 'avatar': '👑'},
-    {'rank': 2, 'name': 'StarGazer', 'score': 45000, 'avatar': '⭐'},
-    {'rank': 3, 'name': 'Brainiac5', 'score': 35000, 'avatar': '🧠'},
-    {'rank': 4, 'name': 'TriviaQueen', 'score': 30000, 'avatar': '👸'},
-    {'rank': 5, 'name': 'QuizMaster', 'score': 28000, 'avatar': '🎓'},
-    {'rank': 6, 'name': 'SmartCookie', 'score': 25000, 'avatar': '🍪'},
-    {'rank': 7, 'name': 'BrainStorm', 'score': 22000, 'avatar': '⚡'},
-    {'rank': 8, 'name': 'WiseOwl', 'score': 20000, 'avatar': '🦉'},
-    {'rank': 9, 'name': 'GeniusGamer', 'score': 18000, 'avatar': '🎮'},
-    {'rank': 10, 'name': 'QuizNinja', 'score': 15000, 'avatar': '🥷'},
+  final FirestoreService _firestoreService = FirestoreService();
+  List<UserModel> _topPlayers = [];
+  int _userRank = 0;
+  bool _isLoading = true;
+
+  // Avatar emojis for display
+  final List<String> _avatars = [
+    '👑',
+    '⭐',
+    '🧠',
+    '👸',
+    '🎓',
+    '🍪',
+    '⚡',
+    '🦉',
+    '🎮',
+    '🥷',
   ];
 
   @override
@@ -53,18 +61,84 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
           ),
         );
 
-    _itemAnimations = List.generate(_topPlayers.length, (index) {
-      final start = (0.2 + (index * 0.05)).clamp(0.0, 1.0);
-      final end = (start + 0.4).clamp(0.0, 1.0);
-      return Tween<double>(begin: 0.0, end: 1.0).animate(
-        CurvedAnimation(
-          parent: _controller,
-          curve: Interval(start, end, curve: Curves.easeOutCubic),
-        ),
-      );
-    });
+    // Initialize with empty animations, will update after data loads
+    _itemAnimations = [];
 
-    _controller.forward();
+    _loadLeaderboardData();
+  }
+
+  Future<void> _loadLeaderboardData() async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final userId = authProvider.user?.id;
+
+      // Load top players
+      final players = await _firestoreService.getTopPlayers(limit: 10);
+
+      // Get user's rank if logged in (with retry for transient errors)
+      if (userId != null) {
+        try {
+          final rank = await _getUserRankWithRetry(userId);
+          _userRank = rank;
+        } catch (e) {
+          debugPrint('Could not get user rank: $e');
+          // Keep _userRank at 0 if failed
+          _userRank = 0;
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _topPlayers = players;
+          _isLoading = false;
+
+          // Create animations for loaded data
+          _itemAnimations = List.generate(_topPlayers.length, (index) {
+            final start = (0.2 + (index * 0.05)).clamp(0.0, 1.0);
+            final end = (start + 0.4).clamp(0.0, 1.0);
+            return Tween<double>(begin: 0.0, end: 1.0).animate(
+              CurvedAnimation(
+                parent: _controller,
+                curve: Interval(start, end, curve: Curves.easeOutCubic),
+              ),
+            );
+          });
+        });
+
+        _controller.forward();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+      debugPrint('Error loading leaderboard: $e');
+    }
+  }
+
+  /// Get user rank with retry logic for transient errors
+  Future<int> _getUserRankWithRetry(String userId, {int maxRetries = 3}) async {
+    int attempts = 0;
+    Duration delay = const Duration(milliseconds: 500);
+
+    while (attempts < maxRetries) {
+      try {
+        return await _firestoreService.getUserRank(userId);
+      } catch (e) {
+        attempts++;
+        if (attempts >= maxRetries) {
+          rethrow;
+        }
+        // Wait before retrying (exponential backoff)
+        await Future.delayed(delay * attempts);
+      }
+    }
+    return 0;
   }
 
   @override
@@ -96,13 +170,16 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
             builder: (context, authProvider, child) {
               final user = authProvider.user;
 
+              if (_isLoading && _topPlayers.isEmpty) {
+                return const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
+                  ),
+                );
+              }
+
               return RefreshIndicator(
-                onRefresh: () async {
-                  await Future.delayed(const Duration(seconds: 1));
-                  if (mounted) {
-                    setState(() {});
-                  }
-                },
+                onRefresh: _loadLeaderboardData,
                 color: AppColors.lightPurple,
                 backgroundColor: AppColors.cardBackground,
                 child: CustomScrollView(
@@ -236,9 +313,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
-                                        'Your Rank: #456',
-                                        style: TextStyle(
+                                      Text(
+                                        'Your Rank: ${_userRank > 0 ? '#$_userRank' : 'Unranked'}',
+                                        style: const TextStyle(
                                           color: AppColors.white,
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
@@ -269,68 +346,92 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
 
                     const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
-                    SliverToBoxAdapter(
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Expanded(
-                              child: _buildPodiumPlace(
-                                player: _topPlayers[1],
-                                height: 100,
-                                animation: _itemAnimations[1],
+                    // Top 3 Podium (only show if we have at least 3 players)
+                    if (_topPlayers.length >= 3)
+                      SliverToBoxAdapter(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Expanded(
+                                child: _buildPodiumPlace(
+                                  player: _topPlayers[1],
+                                  rank: 2,
+                                  height: 100,
+                                  animation: _itemAnimations.length > 1
+                                      ? _itemAnimations[1]
+                                      : _fadeAnimation,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: _buildPodiumPlace(
-                                player: _topPlayers[0],
-                                height: 130,
-                                animation: _itemAnimations[0],
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: _buildPodiumPlace(
+                                  player: _topPlayers[0],
+                                  rank: 1,
+                                  height: 130,
+                                  animation: _itemAnimations.isNotEmpty
+                                      ? _itemAnimations[0]
+                                      : _fadeAnimation,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: _buildPodiumPlace(
-                                player: _topPlayers[2],
-                                height: 80,
-                                animation: _itemAnimations[2],
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: _buildPodiumPlace(
+                                  player: _topPlayers[2],
+                                  rank: 3,
+                                  height: 80,
+                                  animation: _itemAnimations.length > 2
+                                      ? _itemAnimations[2]
+                                      : _fadeAnimation,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
 
                     const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate((context, index) {
-                          final actualIndex = index + 3;
-                          if (actualIndex >= _topPlayers.length) return null;
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final actualIndex = index + 3;
+                            if (actualIndex >= _topPlayers.length) return null;
 
-                          return AnimatedBuilder(
-                            animation: _itemAnimations[actualIndex],
-                            builder: (context, child) {
-                              final value = _itemAnimations[actualIndex].value;
-                              return Opacity(
-                                opacity: value,
-                                child: Transform.translate(
-                                  offset: Offset(0, 20 * (1 - value)),
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(bottom: 12),
-                                    child: _buildLeaderboardItem(
-                                      player: _topPlayers[actualIndex],
+                            final animation =
+                                _itemAnimations.length > actualIndex
+                                ? _itemAnimations[actualIndex]
+                                : _fadeAnimation;
+
+                            return AnimatedBuilder(
+                              animation: animation,
+                              builder: (context, child) {
+                                final value = animation.value;
+                                return Opacity(
+                                  opacity: value,
+                                  child: Transform.translate(
+                                    offset: Offset(0, 20 * (1 - value)),
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 12,
+                                      ),
+                                      child: _buildLeaderboardItem(
+                                        player: _topPlayers[actualIndex],
+                                        rank: actualIndex + 1,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              );
-                            },
-                          );
-                        }, childCount: _topPlayers.length - 3),
+                                );
+                              },
+                            );
+                          },
+                          childCount: _topPlayers.length > 3
+                              ? _topPlayers.length - 3
+                              : 0,
+                        ),
                       ),
                     ),
 
@@ -346,14 +447,14 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   }
 
   Widget _buildPodiumPlace({
-    required Map<String, dynamic> player,
+    required UserModel player,
+    required int rank,
     required double height,
     required Animation<double> animation,
   }) {
-    final rank = player['rank'] as int;
-    final name = player['name'] as String;
-    final score = player['score'] as int;
-    final avatar = player['avatar'] as String;
+    final name = player.displayName;
+    final score = player.totalScore;
+    final avatar = _avatars[rank - 1]; // Get avatar from list
     final color = _getRankColor(rank);
 
     return AnimatedBuilder(
@@ -452,11 +553,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
     );
   }
 
-  Widget _buildLeaderboardItem({required Map<String, dynamic> player}) {
-    final rank = player['rank'] as int;
-    final name = player['name'] as String;
-    final score = player['score'] as int;
-    final avatar = player['avatar'] as String;
+  Widget _buildLeaderboardItem({required UserModel player, required int rank}) {
+    final name = player.displayName;
+    final score = player.totalScore;
+    final avatar = _avatars[rank - 1]; // Get avatar from list
     final color = _getRankColor(rank);
 
     return Container(
