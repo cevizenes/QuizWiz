@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:injectable/injectable.dart';
 import '../../features/auth/data/models/user_model.dart';
 import '../../features/quiz/data/models/quiz_result_model.dart';
 
+@lazySingleton
 class FirebaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -9,10 +11,6 @@ class FirebaseService {
   CollectionReference get quizzesCollection => _firestore.collection('quizzes');
   CollectionReference get quizResultsCollection =>
       _firestore.collection('quiz_results');
-
-  static final FirebaseService _instance = FirebaseService._internal();
-  factory FirebaseService() => _instance;
-  FirebaseService._internal();
 
   Future<UserModel?> getUser(String userId) async {
     try {

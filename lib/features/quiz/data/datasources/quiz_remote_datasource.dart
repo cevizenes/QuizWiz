@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:injectable/injectable.dart';
 import '../models/quiz_result_model.dart';
 
+@lazySingleton
 class QuizRemoteDatasource {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 

@@ -7,12 +7,17 @@ import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/quiz/presentation/providers/quiz_provider.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/screens/splash_screen.dart';
+import 'core/di/injection.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await dotenv.load(fileName: ".env");
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  await configureDependencies();
+
   runApp(const QuizWizApp());
 }
 
@@ -23,8 +28,8 @@ class QuizWizApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => QuizProvider()),
+        ChangeNotifierProvider.value(value: getIt<AuthProvider>()),
+        ChangeNotifierProvider.value(value: getIt<QuizProvider>()),
       ],
       child: MaterialApp(
         title: 'QuizWiz',

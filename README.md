@@ -96,6 +96,9 @@ lib/
 │       └── setting_list_item.dart
 │
 ├── 🔧 core/                                # Infrastructure Layer
+│   ├── di/                                 # Dependency Injection
+│   │   ├── injection.dart                 # DI setup
+│   │   └── injection.config.dart          # Generated DI config
 │   ├── extensions/                         # Dart extensions
 │   │   ├── context_extensions.dart        # BuildContext helpers
 │   │   └── string_extensions.dart         # String helpers
@@ -176,6 +179,7 @@ Each feature is self-contained with its own:
 
 Infrastructure and utilities shared across all features:
 
+- **DI (Dependency Injection)** - GetIt & Injectable setup
 - **Extensions** - Enhance existing Dart classes
 - **Services** - Singleton services (Firebase, API)
 - **Utils** - Helper functions and validators
@@ -206,6 +210,8 @@ Shared UI components and constants:
 - **Flutter** - UI framework
 - **Provider** - State management
 - **Dart** - Programming language
+- **GetIt** - Dependency Injection (Service Locator)
+- **Injectable** - Code Generation for DI
 
 ### Backend & Services
 
@@ -217,6 +223,7 @@ Shared UI components and constants:
 
 - **Flutter Lints** - Code quality
 - **Flutter Dotenv** - Environment variables
+- **Build Runner** - Code generation
 
 ---
 
@@ -244,7 +251,13 @@ Dart SDK: >=3.0.0
    flutter pub get
    ```
 
-3. **Firebase Setup**
+3. **Generate DI Configuration**
+
+   ```bash
+   dart run build_runner build --delete-conflicting-outputs
+   ```
+
+4. **Firebase Setup**
 
    Create a `.env` file in the root directory:
 
@@ -252,7 +265,7 @@ Dart SDK: >=3.0.0
    # Add your environment variables here if needed
    ```
 
-4. **Run the app**
+5. **Run the app**
    ```bash
    flutter run
    ```
@@ -409,6 +422,70 @@ The app uses **Provider** for state management with main providers:
 - Score calculation
 - Question navigation
 
+---
+
+## 💉 Dependency Injection
+
+QuizWiz uses **GetIt** with **Injectable** for dependency injection, providing:
+
+- **Singleton Services** - Single instances across the app
+- **Lazy Loading** - Services created only when needed
+- **Testability** - Easy mocking for unit tests
+- **Decoupling** - Loose coupling between layers
+
+### Registered Services
+
+All services are automatically registered via code generation:
+
+```dart
+// Services
+- FirebaseService           // Firebase operations
+- AuthProvider             // Authentication state
+- QuizProvider             // Quiz state
+- QuizRemoteDatasource     // Quiz data source
+- LeaderboardRemoteDatasource  // Leaderboard data source
+```
+
+### Usage Example
+
+```dart
+import 'package:quizwiz/core/di/injection.dart';
+
+// Get a service instance
+final firebaseService = getIt<FirebaseService>();
+final authProvider = getIt<AuthProvider>();
+
+// Use in widgets (Provider handles this automatically)
+Provider.of<AuthProvider>(context);
+```
+
+### Adding New Services
+
+1. Add `@injectable` annotation to your class:
+
+```dart
+import 'package:injectable/injectable.dart';
+
+@lazySingleton
+class MyNewService {
+  // Implementation
+}
+```
+
+2. Run code generation:
+
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+
+3. Use in your app:
+
+```dart
+final myService = getIt<MyNewService>();
+```
+
+---
+
 ## 📦 Dependencies
 
 ```yaml
@@ -418,6 +495,10 @@ dependencies:
 
   # State Management
   provider: ^6.1.2
+
+  # Dependency Injection
+  get_it: ^7.7.0
+  injectable: ^2.4.4
 
   # Firebase
   firebase_core: ^3.15.2
@@ -431,6 +512,10 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+
+  # Code Generation
+  build_runner: ^2.4.13
+  injectable_generator: ^2.6.2
 ```
 
 ---

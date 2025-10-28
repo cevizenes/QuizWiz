@@ -33,6 +33,11 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Code Generation
+*.g.dart
+*.config.dart
+*.gr.dart
+
 # Symbolication related
 app.*.symbols
 

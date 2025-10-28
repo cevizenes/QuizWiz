@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:injectable/injectable.dart';
 import '../../../auth/data/models/user_model.dart';
 
+@lazySingleton
 class LeaderboardRemoteDatasource {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
