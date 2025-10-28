@@ -1,18 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/quiz_result_model.dart';
-import '../models/user_model.dart';
+import '../../../data/model/quiz_result_model.dart';
+import '../../../data/model/user_model.dart';
 
-/// Firestore Database Service
-/// Provides methods for interacting with Firestore collections
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Collection references
   CollectionReference get _usersCollection => _firestore.collection('users');
   CollectionReference get _quizResultsCollection =>
       _firestore.collection('quiz_results');
 
-  /// Save quiz result to Firestore
   Future<void> saveQuizResult({
     required String userId,
     required String quizId,
@@ -24,7 +20,7 @@ class FirestoreService {
   }) async {
     try {
       final quizResult = QuizResultModel(
-        id: '', // Firestore will generate
+        id: '',
         userId: userId,
         quizId: quizId,
         category: category,
@@ -41,7 +37,6 @@ class FirestoreService {
     }
   }
 
-  /// Update user statistics after completing a quiz
   Future<void> updateUserStatistics({
     required String userId,
     required int scoreToAdd,
@@ -69,7 +64,6 @@ class FirestoreService {
     }
   }
 
-  /// Get user's quiz history
   Future<List<QuizResultModel>> getUserQuizHistory(
     String userId, {
     int limit = 10,
@@ -94,7 +88,6 @@ class FirestoreService {
     }
   }
 
-  /// Get top players for leaderboard
   Future<List<UserModel>> getTopPlayers({int limit = 10}) async {
     try {
       final querySnapshot = await _usersCollection
@@ -115,7 +108,6 @@ class FirestoreService {
     }
   }
 
-  /// Get user rank in leaderboard
   Future<int> getUserRank(String userId) async {
     try {
       final userDoc = await _usersCollection.doc(userId).get();
@@ -135,7 +127,6 @@ class FirestoreService {
     }
   }
 
-  /// Stream of top players for real-time updates
   Stream<List<UserModel>> getTopPlayersStream({int limit = 10}) {
     return _usersCollection
         .orderBy('totalScore', descending: true)
@@ -153,7 +144,6 @@ class FirestoreService {
         );
   }
 
-  /// Get category statistics
   Future<Map<String, int>> getCategoryStatistics(String userId) async {
     try {
       final querySnapshot = await _quizResultsCollection
@@ -174,7 +164,6 @@ class FirestoreService {
     }
   }
 
-  /// Check if user has completed any quizzes
   Future<bool> hasCompletedQuizzes(String userId) async {
     try {
       final querySnapshot = await _quizResultsCollection
@@ -188,7 +177,6 @@ class FirestoreService {
     }
   }
 
-  /// Get total users count
   Future<int> getTotalUsersCount() async {
     try {
       final count = await _usersCollection.count().get();
@@ -198,7 +186,6 @@ class FirestoreService {
     }
   }
 
-  /// Get total quizzes played count
   Future<int> getTotalQuizzesPlayedCount() async {
     try {
       final count = await _quizResultsCollection.count().get();

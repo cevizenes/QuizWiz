@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import '../models/quiz_model.dart';
-import '../theme/app_colors.dart';
+import '../../../data/model/quiz_model.dart';
+import '../../../core/theme/app_colors.dart';
 import 'quiz_result_screen.dart';
 
 class QuizQuestionScreen extends StatefulWidget {
@@ -23,7 +23,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
   int _secondsRemaining = 30;
   bool _isAnswered = false;
   int? _selectedAnswerIndex;
-  int _totalTimeTaken = 0; // Track total time taken across all questions
+  int _totalTimeTaken = 0;
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -80,7 +80,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
 
   void _handleTimeout() {
     if (!_isAnswered) {
-      _handleAnswer(-1); // -1 means timeout/no answer
+      _handleAnswer(-1);
     }
   }
 
@@ -92,7 +92,6 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
       _selectedAnswerIndex = selectedIndex;
       _userAnswers[_currentQuestionIndex] = selectedIndex;
 
-      // Track time taken for this question
       _totalTimeTaken += (30 - _secondsRemaining);
     });
 
@@ -101,12 +100,10 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
 
     if (isCorrect) {
       _correctAnswers++;
-      // Score calculation: base points + time bonus
       final timeBonus = (_secondsRemaining * 2);
       _score += 100 + timeBonus;
     }
 
-    // Wait for animation then move to next question
     Future.delayed(const Duration(milliseconds: 1500), () {
       if (mounted) {
         _nextQuestion();
@@ -171,7 +168,6 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
         child: SafeArea(
           child: Column(
             children: [
-              // Header with progress
               Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
@@ -239,7 +235,6 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
                       ],
                     ),
                     const SizedBox(height: 16),
-                    // Progress bar
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -282,7 +277,6 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
                 ),
               ),
 
-              // Question and Answers
               Expanded(
                 child: FadeTransition(
                   opacity: _fadeAnimation,
@@ -292,7 +286,6 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
                       padding: const EdgeInsets.all(20),
                       child: Column(
                         children: [
-                          // Question card
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.all(24),
@@ -320,7 +313,6 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
 
                           const SizedBox(height: 32),
 
-                          // Answer options
                           ...List.generate(
                             currentQuestion.options.length,
                             (index) => Padding(
@@ -394,7 +386,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
                           ),
                           child: Center(
                             child: Text(
-                              String.fromCharCode(65 + index), // A, B, C, D
+                              String.fromCharCode(65 + index),
                               style: const TextStyle(
                                 color: AppColors.white,
                                 fontSize: 18,

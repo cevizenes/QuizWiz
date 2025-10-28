@@ -1,4 +1,4 @@
-import '../models/quiz_model.dart';
+import '../../data/model/quiz_model.dart';
 
 class SampleQuizzes {
   static final Map<String, List<QuizModel>> _quizzes = {

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
+import '../../../core/theme/app_colors.dart';
 import 'home_screen.dart';
-import 'categories_screen.dart';
-import 'profile_screen.dart';
-import 'leaderboard_screen.dart';
+import '../categories/categories_screen.dart';
+import '../profile/profile_screen.dart';
+import '../leaderboard/leaderboard_screen.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});

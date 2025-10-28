@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
-import '../services/firestore_service.dart';
-import '../models/quiz_result_model.dart';
-import '../theme/app_colors.dart';
-import 'login_screen.dart';
+import '../../providers/auth_provider.dart';
+import '../../../data/datasources/remote/firestore_service.dart';
+import '../../../data/model/quiz_result_model.dart';
+import '../../../core/theme/app_colors.dart';
+import '../auth/login_screen.dart';
+import '../../widgets/custom_stat_card.dart';
+import '../../widgets/achievement_badge.dart';
+import '../../widgets/setting_list_item.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -96,7 +99,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
   }
 
-  /// Get quiz history with retry logic for transient errors
   Future<List<QuizResultModel>> _getQuizHistoryWithRetry(
     String userId, {
     int maxRetries = 3,
@@ -112,7 +114,6 @@ class _ProfileScreenState extends State<ProfileScreen>
         if (attempts >= maxRetries) {
           rethrow;
         }
-        // Wait before retrying (exponential backoff)
         await Future.delayed(delay * attempts);
       }
     }
@@ -152,7 +153,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                       padding: const EdgeInsets.all(20.0),
                       child: Column(
                         children: [
-                          // Header with avatar animation
                           TweenAnimationBuilder<double>(
                             duration: const Duration(milliseconds: 800),
                             tween: Tween(begin: 0.0, end: 1.0),
@@ -205,7 +205,6 @@ class _ProfileScreenState extends State<ProfileScreen>
 
                           const SizedBox(height: 32),
 
-                          // Statistics Title
                           const Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
@@ -220,11 +219,10 @@ class _ProfileScreenState extends State<ProfileScreen>
 
                           const SizedBox(height: 16),
 
-                          // Statistics Cards Grid
                           Row(
                             children: [
                               Expanded(
-                                child: _buildStatCard(
+                                child: CustomStatCard(
                                   icon: Icons.quiz,
                                   label: 'Quizzes',
                                   value: user?.totalQuizzes.toString() ?? '0',
@@ -233,7 +231,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                               ),
                               const SizedBox(width: 12),
                               Expanded(
-                                child: _buildStatCard(
+                                child: CustomStatCard(
                                   icon: Icons.emoji_events,
                                   label: 'Won',
                                   value: user?.quizzesWon.toString() ?? '0',
@@ -248,7 +246,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                           Row(
                             children: [
                               Expanded(
-                                child: _buildStatCard(
+                                child: CustomStatCard(
                                   icon: Icons.trending_up,
                                   label: 'Win Rate',
                                   value: _calculateWinRate(
@@ -260,7 +258,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                               ),
                               const SizedBox(width: 12),
                               Expanded(
-                                child: _buildStatCard(
+                                child: CustomStatCard(
                                   icon: Icons.star,
                                   label: 'Total Score',
                                   value: (user?.totalScore ?? 0).toString(),
@@ -272,7 +270,6 @@ class _ProfileScreenState extends State<ProfileScreen>
 
                           const SizedBox(height: 32),
 
-                          // Achievements Section
                           const Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
@@ -310,22 +307,22 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceEvenly,
                                   children: [
-                                    _buildAchievementBadge(
+                                    AchievementBadge(
                                       icon: '🏆',
                                       title: 'First Win',
                                       isEarned: true,
                                     ),
-                                    _buildAchievementBadge(
+                                    AchievementBadge(
                                       icon: '🔥',
                                       title: '5 Streak',
                                       isEarned: false,
                                     ),
-                                    _buildAchievementBadge(
+                                    AchievementBadge(
                                       icon: '⭐',
                                       title: 'Perfect',
                                       isEarned: false,
                                     ),
-                                    _buildAchievementBadge(
+                                    AchievementBadge(
                                       icon: '💎',
                                       title: 'Master',
                                       isEarned: false,
@@ -338,7 +335,6 @@ class _ProfileScreenState extends State<ProfileScreen>
 
                           const SizedBox(height: 32),
 
-                          // Recent Quiz History
                           const Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
@@ -400,7 +396,6 @@ class _ProfileScreenState extends State<ProfileScreen>
 
                           const SizedBox(height: 16),
 
-                          // Settings Section
                           const Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
@@ -415,8 +410,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
                           const SizedBox(height: 16),
 
-                          // Edit Profile Button
-                          _buildSettingItem(
+                          SettingListItem(
                             icon: Icons.person_outline,
                             title: 'Edit Profile',
                             subtitle: 'Update your personal information',
@@ -432,8 +426,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
                           const SizedBox(height: 12),
 
-                          // Notifications
-                          _buildSettingItem(
+                          SettingListItem(
                             icon: Icons.notifications_outlined,
                             title: 'Notifications',
                             subtitle: 'Manage notification preferences',
@@ -451,8 +444,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
                           const SizedBox(height: 12),
 
-                          // Privacy
-                          _buildSettingItem(
+                          SettingListItem(
                             icon: Icons.privacy_tip_outlined,
                             title: 'Privacy',
                             subtitle: 'Privacy and security settings',
@@ -470,7 +462,6 @@ class _ProfileScreenState extends State<ProfileScreen>
 
                           const SizedBox(height: 24),
 
-                          // Logout Button
                           Container(
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
@@ -532,135 +523,6 @@ class _ProfileScreenState extends State<ProfileScreen>
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildStatCard({
-    required IconData icon,
-    required String label,
-    required String value,
-    required Color color,
-  }) {
-    return TweenAnimationBuilder<double>(
-      duration: const Duration(milliseconds: 600),
-      tween: Tween(begin: 0.0, end: 1.0),
-      curve: Curves.easeOutCubic,
-      builder: (context, animValue, child) {
-        return Transform.scale(
-          scale: 0.9 + (0.1 * animValue),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  color.withValues(alpha: 0.3),
-                  color.withValues(alpha: 0.1),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: color.withValues(alpha: 0.5), width: 2),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(icon, color: color, size: 32),
-                const SizedBox(height: 12),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    color: AppColors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: AppColors.white.withValues(alpha: 0.7),
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildAchievementBadge({
-    required String icon,
-    required String title,
-    required bool isEarned,
-  }) {
-    return TweenAnimationBuilder<double>(
-      duration: const Duration(milliseconds: 800),
-      tween: Tween(begin: 0.0, end: 1.0),
-      curve: Curves.elasticOut,
-      builder: (context, value, child) {
-        return Transform.scale(
-          scale: value,
-          child: Column(
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: isEarned
-                      ? LinearGradient(
-                          colors: [AppColors.lightBlue, AppColors.lightPurple],
-                        )
-                      : null,
-                  color: isEarned
-                      ? null
-                      : AppColors.white.withValues(alpha: 0.1),
-                  border: Border.all(
-                    color: isEarned
-                        ? AppColors.white
-                        : AppColors.white.withValues(alpha: 0.3),
-                    width: 2,
-                  ),
-                  boxShadow: isEarned
-                      ? [
-                          BoxShadow(
-                            color: AppColors.lightBlue.withValues(alpha: 0.4),
-                            blurRadius: 10,
-                            spreadRadius: 2,
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Center(
-                  child: Text(
-                    icon,
-                    style: TextStyle(
-                      fontSize: 28,
-                      color: isEarned
-                          ? AppColors.white
-                          : AppColors.white.withValues(alpha: 0.3),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                style: TextStyle(
-                  color: isEarned
-                      ? AppColors.white
-                      : AppColors.white.withValues(alpha: 0.5),
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 
@@ -757,56 +619,6 @@ class _ProfileScreenState extends State<ProfileScreen>
             ],
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildSettingItem({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.lightPurple.withValues(alpha: 0.3),
-          width: 2,
-        ),
-      ),
-      child: ListTile(
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: AppColors.lightBlue.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, color: AppColors.lightBlue, size: 22),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            color: AppColors.white,
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-          ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: TextStyle(
-            color: AppColors.white.withValues(alpha: 0.6),
-            fontSize: 12,
-          ),
-        ),
-        trailing: Icon(
-          Icons.arrow_forward_ios,
-          color: AppColors.white.withValues(alpha: 0.5),
-          size: 18,
-        ),
-        onTap: onTap,
       ),
     );
   }

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
-import '../data/sample_quizzes.dart';
-import 'quiz_question_screen.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../data/sample/sample_quizzes.dart';
+import '../quiz/quiz_question_screen.dart';
+import '../../widgets/category_card.dart';
 
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
@@ -141,14 +142,38 @@ class _CategoriesScreenState extends State<CategoriesScreen>
                       return AnimatedBuilder(
                         animation: _itemAnimations[index],
                         builder: (context, child) {
+                          final category = _categories[index];
+                          final label = category['label'] as String;
+                          final icon = category['icon'] as IconData;
+
                           return Opacity(
                             opacity: _itemAnimations[index].value,
                             child: Transform.scale(
                               scale: _itemAnimations[index].value,
-                              child: _buildCategoryCard(
-                                icon: _categories[index]['icon'] as IconData,
-                                label: _categories[index]['label'] as String,
-                                context: context,
+                              child: CategoryCard(
+                                icon: icon,
+                                label: label,
+                                onTap: () {
+                                  final quiz = SampleQuizzes.getQuiz(label);
+                                  if (quiz != null) {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            QuizQuestionScreen(quiz: quiz),
+                                      ),
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          '$label quiz coming soon!',
+                                        ),
+                                        backgroundColor: AppColors.lightBlue,
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  }
+                                },
                               ),
                             ),
                           );
@@ -164,95 +189,6 @@ class _CategoriesScreenState extends State<CategoriesScreen>
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildCategoryCard({
-    required IconData icon,
-    required String label,
-    required BuildContext context,
-  }) {
-    return TweenAnimationBuilder<double>(
-      duration: const Duration(milliseconds: 200),
-      tween: Tween(begin: 1.0, end: 1.0),
-      builder: (context, scale, child) {
-        return Transform.scale(
-          scale: scale,
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.cardBackground,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: AppColors.lightPurple.withValues(alpha: 0.3),
-                width: 2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.lightBlue.withValues(alpha: 0.1),
-                  blurRadius: 10,
-                  spreadRadius: 1,
-                ),
-              ],
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () {
-                  final quiz = SampleQuizzes.getQuiz(label);
-                  if (quiz != null) {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => QuizQuestionScreen(quiz: quiz),
-                      ),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('$label quiz coming soon!'),
-                        backgroundColor: AppColors.lightBlue,
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  }
-                },
-                borderRadius: BorderRadius.circular(16),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    TweenAnimationBuilder<double>(
-                      duration: const Duration(milliseconds: 300),
-                      tween: Tween(begin: 0.8, end: 1.0),
-                      curve: Curves.elasticOut,
-                      builder: (context, value, child) {
-                        return Transform.scale(
-                          scale: value,
-                          child: Icon(
-                            icon,
-                            color: AppColors.lightBlue,
-                            size: 48,
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        color: AppColors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 }

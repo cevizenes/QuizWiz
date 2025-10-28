@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/quiz_model.dart';
-import '../providers/auth_provider.dart';
-import '../services/firestore_service.dart';
-import '../theme/app_colors.dart';
-import 'main_navigation.dart';
+import '../../../data/model/quiz_model.dart';
+import '../../providers/auth_provider.dart';
+import '../../../data/datasources/remote/firestore_service.dart';
+import '../../../core/theme/app_colors.dart';
+import '../home/main_navigation.dart';
 
 class QuizResultScreen extends StatefulWidget {
   final QuizModel quiz;

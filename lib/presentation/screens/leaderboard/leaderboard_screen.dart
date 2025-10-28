@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
-import '../services/firestore_service.dart';
-import '../models/user_model.dart';
-import '../theme/app_colors.dart';
+import '../../providers/auth_provider.dart';
+import '../../../data/datasources/remote/firestore_service.dart';
+import '../../../data/model/user_model.dart';
+import '../../../core/theme/app_colors.dart';
 
 class LeaderboardScreen extends StatefulWidget {
   const LeaderboardScreen({super.key});
@@ -76,17 +76,14 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final userId = authProvider.user?.id;
 
-      // Load top players
       final players = await _firestoreService.getTopPlayers(limit: 10);
 
-      // Get user's rank if logged in (with retry for transient errors)
       if (userId != null) {
         try {
           final rank = await _getUserRankWithRetry(userId);
           _userRank = rank;
         } catch (e) {
           debugPrint('Could not get user rank: $e');
-          // Keep _userRank at 0 if failed
           _userRank = 0;
         }
       }
@@ -96,7 +93,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
           _topPlayers = players;
           _isLoading = false;
 
-          // Create animations for loaded data
           _itemAnimations = List.generate(_topPlayers.length, (index) {
             final start = (0.2 + (index * 0.05)).clamp(0.0, 1.0);
             final end = (start + 0.4).clamp(0.0, 1.0);
@@ -121,7 +117,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
     }
   }
 
-  /// Get user rank with retry logic for transient errors
   Future<int> _getUserRankWithRetry(String userId, {int maxRetries = 3}) async {
     int attempts = 0;
     Duration delay = const Duration(milliseconds: 500);
@@ -134,7 +129,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
         if (attempts >= maxRetries) {
           rethrow;
         }
-        // Wait before retrying (exponential backoff)
         await Future.delayed(delay * attempts);
       }
     }
@@ -346,7 +340,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
 
                     const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
-                    // Top 3 Podium (only show if we have at least 3 players)
                     if (_topPlayers.length >= 3)
                       SliverToBoxAdapter(
                         child: Container(
@@ -454,7 +447,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   }) {
     final name = player.displayName;
     final score = player.totalScore;
-    final avatar = _avatars[rank - 1]; // Get avatar from list
+    final avatar = _avatars[rank - 1];
     final color = _getRankColor(rank);
 
     return AnimatedBuilder(
@@ -558,7 +551,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   Widget _buildLeaderboardItem({required UserModel player, required int rank}) {
     final name = player.displayName;
     final score = player.totalScore;
-    final avatar = _avatars[rank - 1]; // Get avatar from list
+    final avatar = _avatars[rank - 1];
     final color = _getRankColor(rank);
 
     return Container(

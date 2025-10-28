@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/quiz_model.dart';
+import '../../data/model/quiz_model.dart';
 
-/// Quiz State Management Provider
-/// Quiz oluşturma, listeleme ve oynama işlemlerini yönetir
 class QuizProvider with ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -14,7 +12,6 @@ class QuizProvider with ChangeNotifier {
   int _currentQuestionIndex = 0;
   List<int> _userAnswers = [];
 
-  // Getters
   List<QuizModel> get quizzes => _quizzes;
   QuizModel? get currentQuiz => _currentQuiz;
   bool get isLoading => _isLoading;
@@ -22,7 +19,6 @@ class QuizProvider with ChangeNotifier {
   int get currentQuestionIndex => _currentQuestionIndex;
   List<int> get userAnswers => _userAnswers;
 
-  /// Kategorilere göre quiz'leri yükle
   Future<void> loadQuizzesByCategory(String category) async {
     try {
       _isLoading = true;
@@ -47,7 +43,6 @@ class QuizProvider with ChangeNotifier {
     }
   }
 
-  /// Tüm quiz'leri yükle
   Future<void> loadAllQuizzes() async {
     try {
       _isLoading = true;
@@ -69,7 +64,6 @@ class QuizProvider with ChangeNotifier {
     }
   }
 
-  /// Featured quiz'leri yükle
   Future<void> loadFeaturedQuizzes() async {
     try {
       _isLoading = true;
@@ -95,7 +89,6 @@ class QuizProvider with ChangeNotifier {
     }
   }
 
-  /// Quiz başlat
   void startQuiz(QuizModel quiz) {
     _currentQuiz = quiz;
     _currentQuestionIndex = 0;
@@ -103,7 +96,6 @@ class QuizProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Cevap kaydet
   void answerQuestion(int answerIndex) {
     if (_currentQuiz == null) return;
 
@@ -113,7 +105,6 @@ class QuizProvider with ChangeNotifier {
     }
   }
 
-  /// Sonraki soruya geç
   void nextQuestion() {
     if (_currentQuiz == null) return;
 
@@ -123,7 +114,6 @@ class QuizProvider with ChangeNotifier {
     }
   }
 
-  /// Önceki soruya dön
   void previousQuestion() {
     if (_currentQuestionIndex > 0) {
       _currentQuestionIndex--;
@@ -131,7 +121,6 @@ class QuizProvider with ChangeNotifier {
     }
   }
 
-  /// Quiz'i bitir ve skor hesapla
   int calculateScore() {
     if (_currentQuiz == null) return 0;
 
@@ -142,10 +131,9 @@ class QuizProvider with ChangeNotifier {
       }
     }
 
-    return correctAnswers * 100; // Her doğru cevap 100 puan
+    return correctAnswers * 100;
   }
 
-  /// Quiz'i temizle
   void clearQuiz() {
     _currentQuiz = null;
     _currentQuestionIndex = 0;
@@ -153,7 +141,6 @@ class QuizProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Hata mesajını temizle
   void clearError() {
     _errorMessage = null;
     notifyListeners();

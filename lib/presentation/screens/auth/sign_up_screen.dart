@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:quizwiz/screens/login_screen.dart';
-import '../providers/auth_provider.dart';
-import '../theme/app_colors.dart';
+import 'login_screen.dart';
+import '../../providers/auth_provider.dart';
+import '../../../core/theme/app_colors.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
