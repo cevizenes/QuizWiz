@@ -331,8 +331,3 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^5.0.0
 ```
-
-<div align="center">
-  <p>Made with using Flutter</p>
-  <p>Star this repo if you like it!</p>
-</div>
