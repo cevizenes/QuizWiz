@@ -26,6 +26,7 @@ QuizWiz is a modern, feature-rich quiz application built with Flutter and Fireba
 ### 🔐 Authentication
 
 - **Email/Password Authentication** - Secure user login
+- **Firebase Authentication** - Robust and secure auth system
 
 ---
 
@@ -80,52 +81,121 @@ QuizWiz is a modern, feature-rich quiz application built with Flutter and Fireba
 
 ## 🏗️ Architecture
 
-This project follows **Clean Architecture** principles for better separation of concerns, testability, and maintainability.
+This project follows **Feature-Based Clean Architecture** principles for better separation of concerns, testability, scalability, and maintainability.
 
 ```
 lib/
-├── core/                           # Shared resources
-│   ├── constants/                  # App-wide constants
-│   │   └── app_constants.dart
-│   ├── theme/                      # Theme configuration
+│
+├── 🎨 common/                              # Shared UI & Constants
+│   ├── constants/
+│   │   └── app_constants.dart             # App-wide constants
+│   └── widgets/                            # Reusable widgets
+│       ├── achievement_badge.dart
+│       ├── category_card.dart
+│       ├── custom_stat_card.dart
+│       └── setting_list_item.dart
+│
+├── 🔧 core/                                # Infrastructure Layer
+│   ├── extensions/                         # Dart extensions
+│   │   ├── context_extensions.dart        # BuildContext helpers
+│   │   └── string_extensions.dart         # String helpers
+│   ├── services/                           # Singleton services
+│   │   └── firebase_service.dart          # Firebase operations
+│   ├── theme/                              # App theming
 │   │   ├── app_colors.dart
 │   │   └── app_theme.dart
-│   └── utils/                      # Utility classes
+│   └── utils/                              # Utility classes
+│       ├── date_utils.dart                # Date formatting
+│       └── validators.dart                # Form validation
 │
-├── data/                           # Data Layer
-│   ├── model/                      # Data models
-│   │   ├── quiz_model.dart
-│   │   ├── quiz_result_model.dart
-│   │   └── user_model.dart
-│   ├── datasources/                # Data sources
-│   │   └── remote/
-│   │       └── firestore_service.dart
-│   └── sample/                     # Sample/mock data
-│       └── sample_quizzes.dart
-│
-├── domain/                         # Business Logic Layer
-│   ├── repositories/               # Repository interfaces
-│   └── usecases/                   # Business use cases
-│       ├── auth/
-│       └── quiz/
-│
-└── presentation/                   # Presentation Layer
-    ├── providers/                  # State management
-    │   ├── auth_provider.dart
-    │   └── quiz_provider.dart
-    ├── screens/                    # UI screens
-    │   ├── auth/
-    │   ├── home/
-    │   ├── categories/
-    │   ├── quiz/
-    │   ├── profile/
-    │   └── leaderboard/
-    └── widgets/                    # Reusable widgets
-        ├── custom_stat_card.dart
-        ├── achievement_badge.dart
-        ├── setting_list_item.dart
-        └── category_card.dart
+└── 🎯 features/                            # Feature Modules
+    │
+    ├── 🔐 auth/                            # Authentication Feature
+    │   ├── data/
+    │   │   └── models/
+    │   │       └── user_model.dart
+    │   └── presentation/
+    │       ├── providers/
+    │       │   └── auth_provider.dart
+    │       └── screens/
+    │           ├── splash_screen.dart
+    │           ├── login_screen.dart
+    │           └── sign_up_screen.dart
+    │
+    ├── 📚 categories/                      # Categories Feature
+    │   └── presentation/
+    │       └── screens/
+    │           └── categories_screen.dart
+    │
+    ├── 🏠 home/                            # Home Feature
+    │   └── presentation/
+    │       └── screens/
+    │           ├── home_screen.dart
+    │           └── main_navigation.dart
+    │
+    ├── 🏆 leaderboard/                     # Leaderboard Feature
+    │   ├── data/
+    │   │   └── datasources/
+    │   │       └── leaderboard_remote_datasource.dart
+    │   └── presentation/
+    │       └── screens/
+    │           └── leaderboard_screen.dart
+    │
+    ├── 👤 profile/                         # Profile Feature
+    │   └── presentation/
+    │       └── screens/
+    │           └── profile_screen.dart
+    │
+    └── 📝 quiz/                            # Quiz Feature
+        ├── data/
+        │   ├── datasources/
+        │   │   └── quiz_remote_datasource.dart
+        │   ├── models/
+        │   │   ├── quiz_model.dart
+        │   │   └── quiz_result_model.dart
+        │   └── sample/
+        │       └── sample_quizzes.dart    # Sample quiz data
+        └── presentation/
+            ├── providers/
+            │   └── quiz_provider.dart
+            └── screens/
+                ├── quiz_question_screen.dart
+                └── quiz_result_screen.dart
 ```
+
+### Architecture Principles
+
+#### 🎯 Feature-Based Structure
+
+Each feature is self-contained with its own:
+
+- **Data Layer** - Models, datasources, repositories
+- **Presentation Layer** - Screens, widgets, providers
+
+#### 🔧 Core Layer
+
+Infrastructure and utilities shared across all features:
+
+- **Extensions** - Enhance existing Dart classes
+- **Services** - Singleton services (Firebase, API)
+- **Utils** - Helper functions and validators
+- **Theme** - App-wide styling
+
+#### 🎨 Common Layer
+
+Shared UI components and constants:
+
+- **Widgets** - Reusable across features
+- **Constants** - App-wide configuration
+
+### Benefits
+
+**Modularity** - Features are independent and portable  
+**Scalability** - Easy to add new features  
+**Maintainability** - Clear separation of concerns  
+**Testability** - Each layer can be tested independently  
+**Team Collaboration** - Multiple developers can work in parallel  
+**Code Reusability** - Shared code in common and core layers
 
 ---
 
@@ -165,7 +235,7 @@ Dart SDK: >=3.0.0
 
    ```bash
    git clone https://github.com/cevizenes/QuizWiz.git
-   cd quizwiz
+   cd QuizWiz
    ```
 
 2. **Install dependencies**
@@ -179,7 +249,7 @@ Dart SDK: >=3.0.0
    Create a `.env` file in the root directory:
 
    ```env
-   # Add your environment variables here
+   # Add your environment variables here if needed
    ```
 
 4. **Run the app**
@@ -193,8 +263,8 @@ Dart SDK: >=3.0.0
 
 ### Required Services
 
-- ✅ Firebase Authentication (Email/Password, Google Sign-In)
-- ✅ Cloud Firestore (Database)
+- Firebase Authentication (Email/Password)
+- Cloud Firestore (Database)
 
 ### Firestore Collections
 
@@ -211,6 +281,21 @@ Dart SDK: >=3.0.0
   "rank": number,
   "achievements": array,
   "createdAt": timestamp
+}
+```
+
+#### `quizzes`
+
+```javascript
+{
+  "title": string,
+  "category": string,
+  "description": string,
+  "difficulty": string,
+  "totalQuestions": number,
+  "timeLimit": number,
+  "questions": array,
+  "isFeatured": boolean
 }
 ```
 
@@ -238,7 +323,12 @@ Create composite indexes in Firebase Console:
    - Fields: `totalScore` (Descending), `__name__` (Descending)
 
 2. **quiz_results collection**
+
    - Fields: `userId` (Ascending), `completedAt` (Descending)
+
+3. **quizzes collection**
+   - Fields: `category` (Ascending), `__name__` (Ascending)
+   - Fields: `isFeatured` (Ascending), `__name__` (Ascending)
 
 ---
 
@@ -246,24 +336,27 @@ Create composite indexes in Firebase Console:
 
 ### 🎯 Quiz System
 
-- **12 Categories** - Diverse topics to test your knowledge
+- **12+ Categories** - Diverse topics to test your knowledge
 - **Timed Questions** - 30 seconds per question
-- **Score System** - Base points + time bonus
+- **Score System** - Base points (100) + time bonus (up to 60 points)
 - **Progress Tracking** - Visual progress indicator
+- **Instant Feedback** - See correct answers immediately
 
 ### 🏆 Leaderboard
 
-- **Global Rankings** - See where you stand
+- **Global Rankings** - See where you stand worldwide
 - **Top 10 Players** - Podium display for top 3
-- **Real-time Updates** - Automatic refresh
-- **User Rank** - Your position in the rankings
+- **Real-time Updates** - Automatic refresh on pull
+- **User Rank** - Your current position
+- **Score Display** - Total points and achievements
 
 ### 👤 User Profile
 
 - **Statistics Dashboard** - Total quizzes, wins, win rate, total score
 - **Achievement Badges** - Unlock as you progress
-- **Quiz History** - Recent quiz results
-- **Settings** - Profile management
+- **Quiz History** - Recent quiz results with categories
+- **Settings** - Profile management options
+- **Logout** - Secure sign out
 
 ---
 
@@ -271,41 +364,50 @@ Create composite indexes in Firebase Console:
 
 ### Color Palette
 
-- **Primary**: Gradient (Blue to Purple)
+- **Primary**: Gradient (Purple to Blue)
+  - `#6B4CE6` → `#4E9FEB`
 - **Secondary**: Light Blue, Light Pink
+  - `#4E9FEB`, `#F472B6`
 - **Background**: Dark Blue shades
-- **Accent**: Gold, Green, Purple
+  - Card: `#1E293B`
+  - Background: `#0F172A`
+- **Accent**: Gold (`#FFD700`), Green, Purple
 
 ### Typography
 
-- **Headings**: Bold, 24-36px
+- **Display Large**: Bold, 32-36px
+- **Headings**: Bold, 20-28px
 - **Body**: Regular, 14-16px
 - **Captions**: Light, 10-12px
 
 ### Components
 
-- **Cards** - Rounded corners, gradient borders
+- **Cards** - Rounded corners (12-16px), gradient borders
 - **Buttons** - Gradient backgrounds, shadow effects
 - **Animations** - Elastic, ease-out curves
+- **Icons** - Outlined style with gradient overlays
 
 ---
 
 ## 📱 State Management
 
-The app uses **Provider** for state management with two main providers:
+The app uses **Provider** for state management with main providers:
 
 ### AuthProvider
 
 - User authentication state
-- User data management
-- Sign in/out functionality
+- User data management (Firestore sync)
+- Sign in/up/out functionality
+- Error handling
+- Loading states
 
 ### QuizProvider
 
-- Quiz data fetching
-- Current quiz state
+- Quiz data fetching from Firestore
+- Current quiz state management
 - Answer tracking
 - Score calculation
+- Question navigation
 
 ## 📦 Dependencies
 
@@ -321,7 +423,6 @@ dependencies:
   firebase_core: ^3.15.2
   firebase_auth: ^5.7.0
   cloud_firestore: ^5.6.12
-  google_sign_in: ^6.3.0
 
   # Environment
   flutter_dotenv: ^5.2.1
@@ -331,3 +432,5 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^5.0.0
 ```
+
+---

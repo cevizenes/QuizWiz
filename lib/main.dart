@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
-import 'presentation/providers/auth_provider.dart';
-import 'presentation/providers/quiz_provider.dart';
+import 'features/auth/presentation/providers/auth_provider.dart';
+import 'features/quiz/presentation/providers/quiz_provider.dart';
 import 'core/theme/app_theme.dart';
-import 'presentation/screens/auth/splash_screen.dart';
+import 'features/auth/presentation/screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
