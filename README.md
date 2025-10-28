@@ -26,8 +26,6 @@ QuizWiz is a modern, feature-rich quiz application built with Flutter and Fireba
 ### 🔐 Authentication
 
 - **Email/Password Authentication** - Secure user login
-- **Google Sign-In** - Quick social authentication
-- **Password Reset** - Easy account recovery
 
 ---
 
