@@ -36,45 +36,45 @@ QuizWiz is a modern, feature-rich quiz application built with Flutter and Fireba
 ### Authentication Screens
 
 <table>
+<tr>
+    <td align="center"><b>Splash Screen</b></td>
+    <td align="center"><b>Login</b></td>
+    <td align="center"><b>Sign Up</b></td>
+  </tr>
   <tr>
     <td><img src="screenshots/splash.png" width="250"/></td>
     <td><img src="screenshots/login.png" width="250"/></td>
     <td><img src="screenshots/signup.png" width="250"/></td>
-  </tr>
-  <tr>
-    <td align="center"><b>Splash Screen</b></td>
-    <td align="center"><b>Login</b></td>
-    <td align="center"><b>Sign Up</b></td>
   </tr>
 </table>
 
 ### Main Application
 
 <table>
+<tr>
+    <td align="center"><b>Home Screen</b></td>
+    <td align="center"><b>Categories</b></td>
+    <td align="center"><b>Quiz Screen</b></td>
+  </tr>
   <tr>
     <td><img src="screenshots/home.png" width="250"/></td>
     <td><img src="screenshots/categories.png" width="250"/></td>
     <td><img src="screenshots/quiz.png" width="250"/></td>
-  </tr>
-  <tr>
-    <td align="center"><b>Home Screen</b></td>
-    <td align="center"><b>Categories</b></td>
-    <td align="center"><b>Quiz Screen</b></td>
   </tr>
 </table>
 
 ### Results & Profile
 
 <table>
+<tr>
+    <td align="center"><b>Quiz Results</b></td>
+    <td align="center"><b>Leaderboard</b></td>
+    <td align="center"><b>Profile</b></td>
+  </tr>
   <tr>
     <td><img src="screenshots/result.png" width="250"/></td>
     <td><img src="screenshots/leaderboard.png" width="250"/></td>
     <td><img src="screenshots/profile.png" width="250"/></td>
-  </tr>
-  <tr>
-    <td align="center"><b>Quiz Results</b></td>
-    <td align="center"><b>Leaderboard</b></td>
-    <td align="center"><b>Profile</b></td>
   </tr>
 </table>
 
