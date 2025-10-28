@@ -335,6 +335,6 @@ dev_dependencies:
 ```
 
 <div align="center">
-  <p>Made with ❤️ using Flutter</p>
-  <p>⭐ Star this repo if you like it!</p>
+  <p>Made with using Flutter</p>
+  <p>Star this repo if you like it!</p>
 </div>
