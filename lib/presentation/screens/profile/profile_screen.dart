@@ -70,29 +70,32 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Future<void> _loadQuizHistory() async {
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final userId = authProvider.user?.id;
+    if (!mounted) return;
 
-      if (userId != null) {
-        final history = await _getQuizHistoryWithRetry(userId);
-        if (mounted) {
-          setState(() {
-            _recentQuizzes = history;
-            _isLoadingHistory = false;
-          });
-        }
-      } else {
-        if (mounted) {
-          setState(() {
-            _isLoadingHistory = false;
-          });
-        }
-      }
-    } catch (e) {
-      debugPrint('Error loading quiz history: $e');
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final userId = authProvider.user?.id;
+
+    if (userId == null) {
       if (mounted) {
         setState(() {
+          _isLoadingHistory = false;
+        });
+      }
+      return;
+    }
+
+    try {
+      final history = await _getQuizHistoryWithRetry(userId);
+      if (mounted) {
+        setState(() {
+          _recentQuizzes = history;
+          _isLoadingHistory = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _recentQuizzes = [];
           _isLoadingHistory = false;
         });
       }
@@ -101,20 +104,22 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   Future<List<QuizResultModel>> _getQuizHistoryWithRetry(
     String userId, {
-    int maxRetries = 3,
+    int maxRetries = 2,
   }) async {
     int attempts = 0;
-    Duration delay = const Duration(milliseconds: 500);
+    const delay = Duration(milliseconds: 300);
 
     while (attempts < maxRetries) {
       try {
-        return await _firestoreService.getUserQuizHistory(userId, limit: 3);
+        return await _firestoreService
+            .getUserQuizHistory(userId, limit: 3)
+            .timeout(const Duration(seconds: 5));
       } catch (e) {
         attempts++;
         if (attempts >= maxRetries) {
-          rethrow;
+          return []; // Return empty list instead of throwing
         }
-        await Future.delayed(delay * attempts);
+        await Future.delayed(delay);
       }
     }
     return [];

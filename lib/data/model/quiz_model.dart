@@ -1,4 +1,3 @@
-/// Quiz Model - Bir quiz'in tüm bilgilerini içerir
 class QuizModel {
   final String id;
   final String title;
@@ -7,7 +6,7 @@ class QuizModel {
   final List<QuestionModel> questions;
   final String difficulty;
   final int totalQuestions;
-  final int timeLimit; // saniye cinsinden
+  final int timeLimit;
   final String? imageUrl;
 
   QuizModel({
@@ -54,7 +53,6 @@ class QuizModel {
   }
 }
 
-/// Soru Modeli
 class QuestionModel {
   final String id;
   final String question;

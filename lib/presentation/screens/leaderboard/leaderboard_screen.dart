@@ -24,20 +24,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   int _userRank = 0;
   bool _isLoading = true;
 
-  // Avatar emojis for display
-  final List<String> _avatars = [
-    '👑',
-    '⭐',
-    '🧠',
-    '👸',
-    '🎓',
-    '🍪',
-    '⚡',
-    '🦉',
-    '🎮',
-    '🥷',
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -68,68 +54,84 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   }
 
   Future<void> _loadLeaderboardData() async {
-    try {
-      setState(() {
-        _isLoading = true;
-      });
+    if (!mounted) return;
 
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final userId = authProvider.user?.id;
 
-      final players = await _firestoreService.getTopPlayers(limit: 10);
+      // Load players with timeout
+      final players = await _firestoreService
+          .getTopPlayers(limit: 10)
+          .timeout(const Duration(seconds: 10), onTimeout: () => <UserModel>[]);
 
+      // Get user rank in parallel (don't wait for it)
       if (userId != null) {
-        try {
-          final rank = await _getUserRankWithRetry(userId);
-          _userRank = rank;
-        } catch (e) {
-          debugPrint('Could not get user rank: $e');
-          _userRank = 0;
-        }
+        _getUserRankWithRetry(userId)
+            .then((rank) {
+              if (mounted) {
+                setState(() {
+                  _userRank = rank;
+                });
+              }
+            })
+            .catchError((_) {
+              // Silently fail - rank stays at 0
+              if (mounted) {
+                setState(() {
+                  _userRank = 0;
+                });
+              }
+            });
       }
 
-      if (mounted) {
-        setState(() {
-          _topPlayers = players;
-          _isLoading = false;
+      if (!mounted) return;
 
-          _itemAnimations = List.generate(_topPlayers.length, (index) {
-            final start = (0.2 + (index * 0.05)).clamp(0.0, 1.0);
-            final end = (start + 0.4).clamp(0.0, 1.0);
-            return Tween<double>(begin: 0.0, end: 1.0).animate(
-              CurvedAnimation(
-                parent: _controller,
-                curve: Interval(start, end, curve: Curves.easeOutCubic),
-              ),
-            );
-          });
+      setState(() {
+        _topPlayers = players;
+        _isLoading = false;
+
+        _itemAnimations = List.generate(_topPlayers.length, (index) {
+          final start = (0.2 + (index * 0.05)).clamp(0.0, 1.0);
+          final end = (start + 0.4).clamp(0.0, 1.0);
+          return Tween<double>(begin: 0.0, end: 1.0).animate(
+            CurvedAnimation(
+              parent: _controller,
+              curve: Interval(start, end, curve: Curves.easeOutCubic),
+            ),
+          );
         });
+      });
 
-        _controller.forward();
-      }
+      _controller.forward();
     } catch (e) {
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
       }
-      debugPrint('Error loading leaderboard: $e');
     }
   }
 
-  Future<int> _getUserRankWithRetry(String userId, {int maxRetries = 3}) async {
+  Future<int> _getUserRankWithRetry(String userId, {int maxRetries = 2}) async {
     int attempts = 0;
-    Duration delay = const Duration(milliseconds: 500);
+    const delay = Duration(milliseconds: 300);
 
     while (attempts < maxRetries) {
       try {
-        return await _firestoreService.getUserRank(userId);
+        return await _firestoreService
+            .getUserRank(userId)
+            .timeout(const Duration(seconds: 3));
       } catch (e) {
         attempts++;
         if (attempts >= maxRetries) {
-          rethrow;
+          return 0; // Return 0 instead of throwing
         }
-        await Future.delayed(delay * attempts);
+        await Future.delayed(delay);
       }
     }
     return 0;
@@ -447,7 +449,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   }) {
     final name = player.displayName;
     final score = player.totalScore;
-    final avatar = _avatars[rank - 1];
     final color = _getRankColor(rank);
 
     return AnimatedBuilder(
@@ -481,8 +482,12 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                       ),
                       child: Center(
                         child: Text(
-                          avatar,
-                          style: const TextStyle(fontSize: 20),
+                          '$rank',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.white,
+                          ),
                         ),
                       ),
                     ),
@@ -551,7 +556,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   Widget _buildLeaderboardItem({required UserModel player, required int rank}) {
     final name = player.displayName;
     final score = player.totalScore;
-    final avatar = _avatars[rank - 1];
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
     final color = _getRankColor(rank);
 
     return Container(
@@ -591,10 +596,25 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
             height: 50,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: color.withValues(alpha: 0.2),
+              gradient: LinearGradient(
+                colors: [
+                  color.withValues(alpha: 0.3),
+                  color.withValues(alpha: 0.1),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              border: Border.all(color: color.withValues(alpha: 0.5), width: 2),
             ),
             child: Center(
-              child: Text(avatar, style: const TextStyle(fontSize: 24)),
+              child: Text(
+                initial,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 16),

@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// Kullanıcı modeli - Firestore'dan gelen kullanıcı verilerini temsil eder
 class UserModel {
   final String id;
   final String email;
@@ -26,7 +25,6 @@ class UserModel {
     required this.createdAt,
   });
 
-  // Firestore'dan veri çekme
   factory UserModel.fromFirestore(Map<String, dynamic> data, String id) {
     return UserModel(
       id: id,
