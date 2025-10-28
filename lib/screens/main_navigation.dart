@@ -15,12 +15,24 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = const [
-    HomeScreen(),
-    CategoriesScreen(),
-    ProfileScreen(),
-    LeaderboardScreen(),
-  ];
+  void _navigateToTab(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      HomeScreen(onNavigateToCategories: () => _navigateToTab(1)),
+      const CategoriesScreen(),
+      const ProfileScreen(),
+      const LeaderboardScreen(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {

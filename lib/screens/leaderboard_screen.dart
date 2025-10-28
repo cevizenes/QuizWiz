@@ -510,7 +510,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
               ),
               const SizedBox(height: 2),
               Text(
-                '${score ~/ 1000}K',
+                score >= 1000
+                    ? '${(score / 1000).toStringAsFixed(1)}K'
+                    : '$score pts',
                 style: TextStyle(
                   color: color,
                   fontSize: 12,
@@ -617,7 +619,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${(score / 1000).toStringAsFixed(0)}K',
+                score >= 1000
+                    ? '${(score / 1000).toStringAsFixed(1)}K'
+                    : '$score',
                 style: TextStyle(
                   color: color,
                   fontSize: 18,
